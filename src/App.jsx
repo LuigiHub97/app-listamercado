@@ -28,7 +28,7 @@ function App() {
     "Higiene",
     "Carnes",
     "Bebidas",
-    "Outros",
+    "Diversos",
   ];
 
   useEffect(() => {
@@ -107,6 +107,10 @@ function App() {
     if (Number.isNaN(precoNumero) || precoNumero <= 0) {
       return;
     }
+
+      if (!categorias.includes(categoria)) {
+    return; // bloqueia categoria inválida
+  }
 
     const indexExistente = itens.findIndex((item) => {
       return (
