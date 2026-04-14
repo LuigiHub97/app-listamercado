@@ -1,32 +1,152 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import PreListaPanel from "./components/PreListaPanel";
+import ListaMercadoPanel from "./components/ListaMercadoPanel";
+import HistoricoPanel from "./components/HistoricoPanel";
 
 function App() {
   const [produto, setProduto] = useState("");
   const [valor, setValor] = useState("");
+  const [orcamento, setOrcamento] = useState("");
+  const [categoria, setCategoria] = useState("Limpeza");
   const [itens, setItens] = useState([]);
 
   const [preListaAberta, setPreListaAberta] = useState(false);
   const [listaAberta, setListaAberta] = useState(false);
+  const [historicoAberto, setHistoricoAberto] = useState(false);
 
   const [itemPreLista, setItemPreLista] = useState("");
+  const [categoriaPreLista, setCategoriaPreLista] = useState("Limpeza");
   const [preLista, setPreLista] = useState([]);
 
+  const [historico, setHistorico] = useState([]);
+
+  const categorias = [
+    "Limpeza",
+    "Cozinha",
+    "Besteiras",
+    "Higiene",
+    "Carnes",
+    "Bebidas",
+    "Outros",
+  ];
+
+  useEffect(() => {
+    const historicoSalvo = localStorage.getItem("historicoCompras");
+    const preListaSalva = localStorage.getItem("preListaCompras");
+    const itensSalvos = localStorage.getItem("itensCompraAtual");
+    const orcamentoSalvo = localStorage.getItem("orcamentoAtual");
+
+    if (historicoSalvo) {
+      setHistorico(JSON.parse(historicoSalvo));
+    }
+
+    if (preListaSalva) {
+      setPreLista(JSON.parse(preListaSalva));
+    }
+
+    if (itensSalvos) {
+      setItens(JSON.parse(itensSalvos));
+    }
+
+    if (orcamentoSalvo) {
+      setOrcamento(orcamentoSalvo);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("historicoCompras", JSON.stringify(historico));
+  }, [historico]);
+
+  useEffect(() => {
+    localStorage.setItem("preListaCompras", JSON.stringify(preLista));
+  }, [preLista]);
+
+  useEffect(() => {
+    localStorage.setItem("itensCompraAtual", JSON.stringify(itens));
+  }, [itens]);
+
+  useEffect(() => {
+    localStorage.setItem("orcamentoAtual", orcamento);
+  }, [orcamento]);
+
+  function normalizarTexto(texto) {
+    return texto.trim().toLowerCase();
+  }
+
+  function converterParaNumero(texto) {
+    return Number(String(texto).replace(",", "."));
+  }
+
+  function formatarData(dataIso) {
+    const data = new Date(dataIso);
+
+    return data.toLocaleString("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  }
+
+  function agruparPorCategoria(lista) {
+    return categorias
+      .map((nomeCategoria) => ({
+        categoria: nomeCategoria,
+        itens: lista.filter((item) => item.categoria === nomeCategoria),
+      }))
+      .filter((grupo) => grupo.itens.length > 0);
+  }
+
   function adicionarItem() {
-    if (produto === "" || valor === "") {
+    const nomeLimpo = produto.trim();
+    const precoNumero = converterParaNumero(valor);
+
+    if (nomeLimpo === "" || valor.trim() === "") {
       return;
     }
 
-    const novoItem = {
-      nome: produto,
-      preco: valor,
-    };
+    if (Number.isNaN(precoNumero) || precoNumero <= 0) {
+      return;
+    }
 
-    const novosItens = [...itens, novoItem];
-    setItens(novosItens);
+    const indexExistente = itens.findIndex((item) => {
+      return (
+        normalizarTexto(item.nome) === normalizarTexto(nomeLimpo) &&
+        item.precoUnitario === precoNumero &&
+        item.categoria === categoria
+      );
+    });
+
+    let novaLista = [];
+
+    if (indexExistente !== -1) {
+      novaLista = itens.map((item, index) => {
+        if (index === indexExistente) {
+          return {
+            ...item,
+            quantidade: item.quantidade + 1,
+          };
+        }
+        return item;
+      });
+    } else {
+      novaLista = [
+        ...itens,
+        {
+          nome: nomeLimpo,
+          precoUnitario: precoNumero,
+          quantidade: 1,
+          categoria,
+        },
+      ];
+    }
+
+    setItens(novaLista);
 
     const novaPreLista = preLista.map((item) => {
-      if (item.nome.toLowerCase() === produto.toLowerCase()) {
+      if (
+        normalizarTexto(item.nome) === normalizarTexto(nomeLimpo) &&
+        item.categoria === categoria
+      ) {
         return { ...item, concluido: true };
       }
       return item;
@@ -36,174 +156,165 @@ function App() {
 
     setProduto("");
     setValor("");
+    setCategoria("Limpeza");
+  }
+
+  function aumentarQuantidade(indexParaAlterar) {
+    setItens((listaAtual) =>
+      listaAtual.map((item, index) =>
+        index === indexParaAlterar
+          ? { ...item, quantidade: item.quantidade + 1 }
+          : item
+      )
+    );
+  }
+
+  function diminuirQuantidade(indexParaAlterar) {
+    setItens((listaAtual) =>
+      listaAtual
+        .map((item, index) =>
+          index === indexParaAlterar
+            ? { ...item, quantidade: item.quantidade - 1 }
+            : item
+        )
+        .filter((item) => item.quantidade > 0)
+    );
   }
 
   function removerItem(indexParaRemover) {
-    const novaLista = itens.filter(
-      (item, index) => index !== indexParaRemover
+    setItens((listaAtual) =>
+      listaAtual.filter((_, index) => index !== indexParaRemover)
     );
-    setItens(novaLista);
   }
 
   function adicionarPreLista() {
-    if (itemPreLista === "") {
+    const nomeLimpo = itemPreLista.trim();
+
+    if (nomeLimpo === "") {
       return;
     }
 
-    const novoItemPreLista = {
-      nome: itemPreLista,
-      concluido: false,
-    };
+    const itemJaExiste = preLista.some((item) => {
+      return (
+        normalizarTexto(item.nome) === normalizarTexto(nomeLimpo) &&
+        item.categoria === categoriaPreLista
+      );
+    });
 
-    setPreLista([...preLista, novoItemPreLista]);
+    if (itemJaExiste) {
+      setItemPreLista("");
+      return;
+    }
+
+    setPreLista((listaAtual) => [
+      ...listaAtual,
+      {
+        nome: nomeLimpo,
+        categoria: categoriaPreLista,
+        concluido: false,
+      },
+    ]);
+
     setItemPreLista("");
+    setCategoriaPreLista("Limpeza");
   }
 
   function removerPreLista(indexParaRemover) {
-    const novaPreLista = preLista.filter(
-      (item, index) => index !== indexParaRemover
+    setPreLista((listaAtual) =>
+      listaAtual.filter((_, index) => index !== indexParaRemover)
     );
-    setPreLista(novaPreLista);
   }
 
   const total = itens.reduce((acc, item) => {
-    return acc + Number(item.preco);
+    return acc + item.precoUnitario * item.quantidade;
   }, 0);
+
+  const orcamentoNumero =
+    orcamento.trim() === "" ? 0 : converterParaNumero(orcamento);
+
+  const saldoRestante =
+    Number.isNaN(orcamentoNumero) ? 0 : orcamentoNumero - total;
+
+  const estourouOrcamento = saldoRestante < 0;
+
+  function finalizarCompra() {
+    if (itens.length === 0) {
+      return;
+    }
+
+    const compraFinalizada = {
+      id: Date.now(),
+      data: new Date().toISOString(),
+      orcamento:
+        orcamento.trim() === "" || Number.isNaN(converterParaNumero(orcamento))
+          ? 0
+          : converterParaNumero(orcamento),
+      total,
+      saldoRestante,
+      itens: itens.map((item) => ({ ...item })),
+    };
+
+    setHistorico((historicoAtual) => [compraFinalizada, ...historicoAtual]);
+    setItens([]);
+  }
+
+  function limparHistorico() {
+    setHistorico([]);
+  }
+
+  const preListaAgrupada = agruparPorCategoria(preLista);
+  const itensAgrupados = agruparPorCategoria(itens);
 
   return (
     <div className="app">
       <div className="container-duplo">
-        <div className="cupom">
-          <h1>Pré-lista</h1>
+        <PreListaPanel
+          preListaAberta={preListaAberta}
+          setPreListaAberta={setPreListaAberta}
+          itemPreLista={itemPreLista}
+          setItemPreLista={setItemPreLista}
+          categoriaPreLista={categoriaPreLista}
+          setCategoriaPreLista={setCategoriaPreLista}
+          categorias={categorias}
+          preLista={preLista}
+          preListaAgrupada={preListaAgrupada}
+          adicionarPreLista={adicionarPreLista}
+          removerPreLista={removerPreLista}
+        />
 
-          <div className="linha"></div>
-
-          <button
-            className="botao-toggle"
-            onClick={() => setPreListaAberta(!preListaAberta)}
-          >
-            {preListaAberta ? "Fechar Pré-lista" : "Abrir Pré-lista"}
-          </button>
-
-          {preListaAberta && (
-            <>
-              <div className="linha"></div>
-
-              <div className="formulario">
-                <input
-                  placeholder="Item da pré-lista"
-                  value={itemPreLista}
-                  onChange={(e) => setItemPreLista(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      adicionarPreLista();
-                    }
-                  }}
-                />
-
-                <button onClick={adicionarPreLista}>Adicionar</button>
-              </div>
-
-              <div className="linha"></div>
-
-              <div className="lista">
-                {preLista.length === 0 && (
-                  <p className="vazio">Nenhum item na pré-lista</p>
-                )}
-
-                {preLista.map((item, index) => (
-                  <div className="item item-prelista" key={index}>
-                    <span className="nome-item">
-                      {item.concluido ? "✅ " : "⬜ "} {item.nome}
-                    </span>
-                    <button
-                      className="botao-remover"
-                      onClick={() => removerPreLista(index)}
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="cupom">
-          <h1>Lista Mercado</h1>
-
-          <div className="linha"></div>
-
-          <button
-            className="botao-toggle"
-            onClick={() => setListaAberta(!listaAberta)}
-          >
-            {listaAberta ? "Fechar Lista de Compra" : "Abrir Lista de Compra"}
-          </button>
-
-          {listaAberta && (
-            <>
-              <div className="linha"></div>
-
-              <div className="formulario">
-                <input
-                  placeholder="Nome do produto"
-                  value={produto}
-                  onChange={(e) => setProduto(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      adicionarItem();
-                    }
-                  }}
-                />
-
-                <input
-                  placeholder="Valor"
-                  value={valor}
-                  onChange={(e) => setValor(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      adicionarItem();
-                    }
-                  }}
-                />
-
-                <button onClick={adicionarItem}>Adicionar</button>
-              </div>
-
-              <div className="linha"></div>
-
-              <div className="lista">
-                {itens.length === 0 && (
-                  <p className="vazio">Nenhum item adicionado</p>
-                )}
-
-                {itens.map((item, index) => (
-                  <div className="item" key={index}>
-                    <span className="nome-item">{item.nome}</span>
-                    <span className="preco-item">
-                      R$ {Number(item.preco).toFixed(2)}
-                    </span>
-                    <button
-                      className="botao-remover"
-                      onClick={() => removerItem(index)}
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="linha"></div>
-
-              <div className="total">
-                <span>TOTAL</span>
-                <span>R$ {total.toFixed(2)}</span>
-              </div>
-            </>
-          )}
-        </div>
+        <ListaMercadoPanel
+          listaAberta={listaAberta}
+          setListaAberta={setListaAberta}
+          orcamento={orcamento}
+          setOrcamento={setOrcamento}
+          produto={produto}
+          setProduto={setProduto}
+          valor={valor}
+          setValor={setValor}
+          categoria={categoria}
+          setCategoria={setCategoria}
+          categorias={categorias}
+          itens={itens}
+          itensAgrupados={itensAgrupados}
+          adicionarItem={adicionarItem}
+          aumentarQuantidade={aumentarQuantidade}
+          diminuirQuantidade={diminuirQuantidade}
+          removerItem={removerItem}
+          total={total}
+          saldoRestante={saldoRestante}
+          estourouOrcamento={estourouOrcamento}
+          finalizarCompra={finalizarCompra}
+        />
       </div>
+
+      <HistoricoPanel
+        historicoAberto={historicoAberto}
+        setHistoricoAberto={setHistoricoAberto}
+        historico={historico}
+        categorias={categorias}
+        formatarData={formatarData}
+        limparHistorico={limparHistorico}
+      />
     </div>
   );
 }
