@@ -1,6 +1,8 @@
 function ListaMercadoPanel({
   listaAberta,
   setListaAberta,
+  orcamento,
+  setOrcamento,
   produto,
   setProduto,
   valor,
@@ -15,6 +17,8 @@ function ListaMercadoPanel({
   diminuirQuantidade,
   removerItem,
   total,
+  saldoRestante,
+  estourouOrcamento,
   finalizarCompra,
 }) {
   return (
@@ -32,6 +36,34 @@ function ListaMercadoPanel({
 
       {listaAberta && (
         <>
+          <div className="linha"></div>
+
+          <div className="formulario">
+            <input
+              placeholder="Seu orçamento"
+              value={orcamento}
+              onChange={(e) => setOrcamento(e.target.value)}
+            />
+          </div>
+
+          <div className="resumo-orcamento">
+            <div className="saldo-linha">
+              <span>Gasto</span>
+              <strong>R$ {total.toFixed(2)}</strong>
+            </div>
+
+            <div className="saldo-linha saldo-restante">
+              <span>{estourouOrcamento ? "Ultrapassou" : "Restante"}</span>
+              <strong>R$ {saldoRestante.toFixed(2)}</strong>
+            </div>
+          </div>
+
+          {estourouOrcamento && (
+            <p className="alerta-orcamento">
+              Passou R$ {Math.abs(saldoRestante).toFixed(2)} do orçamento.
+            </p>
+          )}
+
           <div className="linha"></div>
 
           <div className="formulario">
