@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+
 function ListaMercadoPanel({
   listaAberta,
   setListaAberta,
@@ -21,6 +23,91 @@ function ListaMercadoPanel({
   estourouOrcamento,
   finalizarCompra,
 }) {
+  const [gravando, setGravando] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const extrairItemEPreco = (texto) => {
+    const textoLimpo = texto
+      .toLowerCase()
+      .trim()
+      .replace(",", ".")
+      .replace(/r\$/g, " ")
+      .replace(/\s+/g, " ");
+
+    const match = textoLimpo.match(/(.+?)\s+(\d+(?:\.\d+)?)\s*(real|reais)?$/i);
+
+    if (!match) {
+      return null;
+    }
+
+    const nome = match[1]
+      .replace(/\b(real|reais)\b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const preco = match[2].trim();
+
+    if (!nome || !preco) {
+      return null;
+    }
+
+    return { nome, preco };
+  };
+
+  const adicionarItemPorVoz = (nome, preco) => {
+    setProduto(nome);
+    setValor(preco);
+    adicionarItem(nome, preco);
+  };
+
+  const iniciarReconhecimento = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Seu navegador não suporta reconhecimento de voz.");
+      return;
+    }
+
+    if (gravando && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "pt-BR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setGravando(true);
+    };
+
+    recognition.onend = () => {
+      setGravando(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Erro no reconhecimento de voz:", event.error);
+      setGravando(false);
+      alert("Não consegui entender sua voz. Tente de novo.");
+    };
+
+    recognition.onresult = (event) => {
+      const textoReconhecido = event.results[0][0].transcript;
+      const resultado = extrairItemEPreco(textoReconhecido);
+
+      if (!resultado) {
+        alert('Fale no formato: "arroz 10 reais"');
+        return;
+      }
+
+      adicionarItemPorVoz(resultado.nome, resultado.preco);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
   return (
     <div className="cupom">
       <h1>Lista Mercado</h1>
@@ -101,6 +188,16 @@ function ListaMercadoPanel({
             </select>
 
             <button onClick={adicionarItem}>Adicionar</button>
+
+            <button
+              type="button"
+              className={`botao-voz ${gravando ? "gravando" : ""}`}
+              onClick={iniciarReconhecimento}
+              title={gravando ? "Ouvindo..." : "Adicionar por voz"}
+              aria-label={gravando ? "Ouvindo..." : "Adicionar por voz"}
+            >
+              🎤
+            </button>
           </div>
 
           <div className="linha"></div>
