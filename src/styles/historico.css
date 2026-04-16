@@ -1,0 +1,100 @@
+.botao-historico-flutuante {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 1100;
+  min-width: 155px;
+  min-height: 52px;
+  padding: 0 16px;
+  background: linear-gradient(180deg, var(--dark-button) 0%, var(--dark-button-hover) 100%);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.25);
+}
+
+.botao-historico-flutuante:hover {
+  transform: translateY(-2px);
+}
+
+.painel-historico {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 380px;
+  max-width: 92vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(7px);
+  border-right: 1px solid var(--border);
+  box-shadow: 18px 0 38px rgba(15, 23, 42, 0.12);
+  padding: 20px 16px 90px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1200;
+}
+
+.painel-historico .item {
+  width: 100%;
+  min-width: 0;
+}
+
+.painel-historico .preco-item {
+  padding: 8px;
+}
+
+.app-historico-aberto .cupom {
+  flex: 0 1 520px;
+  min-width: 380px;
+}
+
+.app-historico-aberto .item:not(.item-prelista):not(.item-historico-info) {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.app-historico-aberto .item:not(.item-prelista):not(.item-historico-info) .botao-remover {
+  width: 100%;
+  min-width: 32px;
+}
+
+.topo-historico {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.topo-historico h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.botao-fechar-historico {
+  width: 40px;
+  height: 40px;
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  padding: 0;
+}
+
+.botao-fechar-historico:hover {
+  background: #f1f5f9;
+}
+
+.bloco-historico {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.76);
+  border: 1px solid #edf1ef;
+  box-shadow: var(--shadow-soft);
+}
+
+.bloco-historico + .bloco-historico {
+  margin-top: 12px;
+}

@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "./styles/global.css";
+import "./styles/app-layout.css";
+import "./styles/formulario.css";
+import "./styles/lista.css";
+import "./styles/historico.css";
+import "./styles/responsive.css";
 import PreListaPanel from "./components/PreListaPanel";
 import ListaMercadoPanel from "./components/ListaMercadoPanel";
 import HistoricoPanel from "./components/HistoricoPanel";
@@ -36,7 +41,6 @@ function App() {
   const [preListaAberta, setPreListaAberta] = useState(false);
   const [listaAberta, setListaAberta] = useState(false);
   const [historicoAberto, setHistoricoAberto] = useState(false);
-  const [saldoMinimizado, setSaldoMinimizado] = useState(false);
 
   const [itemPreLista, setItemPreLista] = useState("");
   const [categoriaPreLista, setCategoriaPreLista] = useState("Limpeza");
@@ -100,11 +104,11 @@ function App() {
       .filter((grupo) => grupo.itens.length > 0);
   }
 
-  function adicionarItem() {
-    const nomeLimpo = produto.trim();
-    const precoNumero = converterParaNumero(valor);
+  function adicionarItem(nomeRecebido = produto, valorRecebido = valor) {
+    const nomeLimpo = nomeRecebido.trim();
+    const precoNumero = converterParaNumero(valorRecebido);
 
-    if (nomeLimpo === "" || valor.trim() === "") {
+    if (nomeLimpo === "" || String(valorRecebido).trim() === "") {
       return;
     }
 
@@ -112,9 +116,9 @@ function App() {
       return;
     }
 
-      if (!categorias.includes(categoria)) {
-    return; // bloqueia categoria inválida
-  }
+    if (!categorias.includes(categoria)) {
+      return;
+    }
 
     const indexExistente = itens.findIndex((item) => {
       return (
@@ -161,7 +165,6 @@ function App() {
     });
 
     setPreLista(novaPreLista);
-
     setProduto("");
     setValor("");
     setCategoria("Limpeza");
@@ -275,53 +278,6 @@ function App() {
 
   return (
     <div className={`app ${historicoAberto ? "app-historico-aberto" : ""}`}>
-      <aside
-        className={`saldo-topo ${saldoMinimizado ? "saldo-minimizado" : ""} ${
-          estourouOrcamento ? "saldo-topo-negativo" : ""
-        }`}
-      >
-        <div className="saldo-cabecalho">
-          <label htmlFor="orcamento">Saldo do mercado</label>
-
-          <button
-            className="botao-minimizar-saldo"
-            onClick={() => setSaldoMinimizado(!saldoMinimizado)}
-          >
-            {saldoMinimizado ? "Abrir" : "Minimizar"}
-          </button>
-        </div>
-
-        {!saldoMinimizado && (
-          <input
-            id="orcamento"
-          placeholder="Seu orçamento"
-            value={orcamento}
-            onChange={(e) => setOrcamento(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setListaAberta(true);
-              }
-            }}
-          />
-        )}
-
-        {!saldoMinimizado && (
-          <div className="saldo-linha">
-            <span>Gasto</span>
-            <strong>R$ {total.toFixed(2)}</strong>
-          </div>
-        )}
-
-        <div className="saldo-linha saldo-restante">
-          <span>Restante</span>
-          <strong>R$ {saldoRestante.toFixed(2)}</strong>
-        </div>
-
-        {estourouOrcamento && !saldoMinimizado && (
-          <p className="alerta-orcamento">Você estourou o orçamento.</p>
-        )}
-      </aside>
-
       <div className="container-duplo">
         <PreListaPanel
           preListaAberta={preListaAberta}
@@ -340,6 +296,8 @@ function App() {
         <ListaMercadoPanel
           listaAberta={listaAberta}
           setListaAberta={setListaAberta}
+          orcamento={orcamento}
+          setOrcamento={setOrcamento}
           produto={produto}
           setProduto={setProduto}
           valor={valor}
@@ -354,6 +312,8 @@ function App() {
           diminuirQuantidade={diminuirQuantidade}
           removerItem={removerItem}
           total={total}
+          saldoRestante={saldoRestante}
+          estourouOrcamento={estourouOrcamento}
           finalizarCompra={finalizarCompra}
         />
       </div>

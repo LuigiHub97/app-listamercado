@@ -1,0 +1,110 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.titulo-categoria {
+  display: inline-flex;
+  align-items: center;
+  margin: 18px 0 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto auto 32px 32px 32px;
+  gap: 8px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #edf1ef;
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  box-shadow: var(--shadow-soft);
+  transition: 0.2s ease;
+  animation: aparecer 0.2s ease;
+}
+
+.item:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+}
+
+.item-prelista {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.item-historico-info {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.item-historico-produto {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.nome-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.preco-item {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.botao-remover {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.botao-remover:hover {
+  transform: translateY(-1px);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.item .botao-remover:last-child:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: rgba(194, 65, 65, 0.22);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

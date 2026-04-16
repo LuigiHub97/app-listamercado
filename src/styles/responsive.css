@@ -1,0 +1,88 @@
+@media (max-width: 1200px) {
+  .container-duplo {
+    width: 100%;
+    margin-left: 48px;
+  }
+
+  .app-historico-aberto .container-duplo {
+    width: calc(100% - 660px);
+    margin-left: 380px;
+  }
+
+  .cupom {
+    min-width: 360px;
+  }
+}
+
+@media (max-width: 950px) {
+  .app {
+    flex-direction: column;
+    padding: 18px 12px;
+  }
+
+  .container-duplo,
+  .app-historico-aberto .container-duplo {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .cupom {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: stretch;
+  }
+
+  .item-prelista,
+  .item-historico-info {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .item-historico-produto {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .nome-item {
+    grid-column: auto;
+  }
+
+  .item-prelista .nome-item,
+  .item-historico-info .nome-item {
+    grid-column: auto;
+  }
+
+  .preco-item,
+  .botao-remover {
+    justify-self: stretch;
+  }
+
+  .botao-remover {
+    width: 100%;
+  }
+
+  .total {
+    padding: 14px;
+  }
+
+  .total span:last-child {
+    font-size: 20px;
+  }
+
+  .painel-historico {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .botao-historico-flutuante {
+    left: 12px;
+    right: auto;
+    bottom: 12px;
+  }
+}
