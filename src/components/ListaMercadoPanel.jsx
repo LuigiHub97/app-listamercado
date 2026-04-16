@@ -1,8 +1,6 @@
 function ListaMercadoPanel({
   listaAberta,
   setListaAberta,
-  orcamento,
-  setOrcamento,
   produto,
   setProduto,
   valor,
@@ -17,28 +15,11 @@ function ListaMercadoPanel({
   diminuirQuantidade,
   removerItem,
   total,
-  saldoRestante,
-  estourouOrcamento,
   finalizarCompra,
 }) {
   return (
     <div className="cupom">
       <h1>Lista Mercado</h1>
-
-      <div className="linha"></div>
-
-      <div className="formulario">
-        <input
-          placeholder="Quanto você tem pro mercado?"
-          value={orcamento}
-          onChange={(e) => setOrcamento(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setListaAberta(true);
-            }
-          }}
-        />
-      </div>
 
       <div className="linha"></div>
 
@@ -121,10 +102,6 @@ function ListaMercadoPanel({
                       <span className="preco-item">{item.quantidade}x</span>
 
                       <span className="preco-item">
-                        R$ {item.precoUnitario.toFixed(2)}
-                      </span>
-
-                      <span className="preco-item">
                         R$ {subtotal.toFixed(2)}
                       </span>
 
@@ -161,19 +138,6 @@ function ListaMercadoPanel({
             <span>TOTAL</span>
             <span>R$ {total.toFixed(2)}</span>
           </div>
-
-          <div className={`total ${estourouOrcamento ? "total-negativo" : ""}`}>
-            <span>RESTANTE</span>
-            <span>R$ {saldoRestante.toFixed(2)}</span>
-          </div>
-
-          {estourouOrcamento && (
-            <p className="alerta-orcamento">
-              ⚠️ Você estourou o orçamento.
-            </p>
-          )}
-
-          <div className="linha"></div>
 
           <button className="botao-toggle" onClick={finalizarCompra}>
             Finalizar Compra

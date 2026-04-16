@@ -102,10 +102,6 @@ function HistoricoPanel({
                             </span>
 
                             <span className="preco-item">
-                              R$ {item.precoUnitario.toFixed(2)}
-                            </span>
-
-                            <span className="preco-item">
                               R$ {subtotal.toFixed(2)}
                             </span>
                           </div>

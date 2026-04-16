@@ -4,22 +4,49 @@ import PreListaPanel from "./components/PreListaPanel";
 import ListaMercadoPanel from "./components/ListaMercadoPanel";
 import HistoricoPanel from "./components/HistoricoPanel";
 
+function criarIdCompra() {
+  return Date.now();
+}
+
+function lerJsonSalvo(chave, fallback) {
+  const valorSalvo = localStorage.getItem(chave);
+
+  if (!valorSalvo) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(valorSalvo);
+  } catch {
+    return fallback;
+  }
+}
+
 function App() {
   const [produto, setProduto] = useState("");
   const [valor, setValor] = useState("");
-  const [orcamento, setOrcamento] = useState("");
+  const [orcamento, setOrcamento] = useState(
+    () => localStorage.getItem("orcamentoAtual") ?? ""
+  );
   const [categoria, setCategoria] = useState("Limpeza");
-  const [itens, setItens] = useState([]);
+  const [itens, setItens] = useState(() =>
+    lerJsonSalvo("itensCompraAtual", [])
+  );
 
   const [preListaAberta, setPreListaAberta] = useState(false);
   const [listaAberta, setListaAberta] = useState(false);
   const [historicoAberto, setHistoricoAberto] = useState(false);
+  const [saldoMinimizado, setSaldoMinimizado] = useState(false);
 
   const [itemPreLista, setItemPreLista] = useState("");
   const [categoriaPreLista, setCategoriaPreLista] = useState("Limpeza");
-  const [preLista, setPreLista] = useState([]);
+  const [preLista, setPreLista] = useState(() =>
+    lerJsonSalvo("preListaCompras", [])
+  );
 
-  const [historico, setHistorico] = useState([]);
+  const [historico, setHistorico] = useState(() =>
+    lerJsonSalvo("historicoCompras", [])
+  );
 
   const categorias = [
     "Limpeza",
@@ -30,29 +57,6 @@ function App() {
     "Bebidas",
     "Diversos",
   ];
-
-  useEffect(() => {
-    const historicoSalvo = localStorage.getItem("historicoCompras");
-    const preListaSalva = localStorage.getItem("preListaCompras");
-    const itensSalvos = localStorage.getItem("itensCompraAtual");
-    const orcamentoSalvo = localStorage.getItem("orcamentoAtual");
-
-    if (historicoSalvo) {
-      setHistorico(JSON.parse(historicoSalvo));
-    }
-
-    if (preListaSalva) {
-      setPreLista(JSON.parse(preListaSalva));
-    }
-
-    if (itensSalvos) {
-      setItens(JSON.parse(itensSalvos));
-    }
-
-    if (orcamentoSalvo) {
-      setOrcamento(orcamentoSalvo);
-    }
-  }, []);
 
   useEffect(() => {
     localStorage.setItem("historicoCompras", JSON.stringify(historico));
@@ -247,7 +251,7 @@ function App() {
     }
 
     const compraFinalizada = {
-      id: Date.now(),
+      id: criarIdCompra(),
       data: new Date().toISOString(),
       orcamento:
         orcamento.trim() === "" || Number.isNaN(converterParaNumero(orcamento))
@@ -270,7 +274,54 @@ function App() {
   const itensAgrupados = agruparPorCategoria(itens);
 
   return (
-    <div className="app">
+    <div className={`app ${historicoAberto ? "app-historico-aberto" : ""}`}>
+      <aside
+        className={`saldo-topo ${saldoMinimizado ? "saldo-minimizado" : ""} ${
+          estourouOrcamento ? "saldo-topo-negativo" : ""
+        }`}
+      >
+        <div className="saldo-cabecalho">
+          <label htmlFor="orcamento">Saldo do mercado</label>
+
+          <button
+            className="botao-minimizar-saldo"
+            onClick={() => setSaldoMinimizado(!saldoMinimizado)}
+          >
+            {saldoMinimizado ? "Abrir" : "Minimizar"}
+          </button>
+        </div>
+
+        {!saldoMinimizado && (
+          <input
+            id="orcamento"
+          placeholder="Seu orçamento"
+            value={orcamento}
+            onChange={(e) => setOrcamento(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setListaAberta(true);
+              }
+            }}
+          />
+        )}
+
+        {!saldoMinimizado && (
+          <div className="saldo-linha">
+            <span>Gasto</span>
+            <strong>R$ {total.toFixed(2)}</strong>
+          </div>
+        )}
+
+        <div className="saldo-linha saldo-restante">
+          <span>Restante</span>
+          <strong>R$ {saldoRestante.toFixed(2)}</strong>
+        </div>
+
+        {estourouOrcamento && !saldoMinimizado && (
+          <p className="alerta-orcamento">Você estourou o orçamento.</p>
+        )}
+      </aside>
+
       <div className="container-duplo">
         <PreListaPanel
           preListaAberta={preListaAberta}
@@ -289,8 +340,6 @@ function App() {
         <ListaMercadoPanel
           listaAberta={listaAberta}
           setListaAberta={setListaAberta}
-          orcamento={orcamento}
-          setOrcamento={setOrcamento}
           produto={produto}
           setProduto={setProduto}
           valor={valor}
@@ -305,8 +354,6 @@ function App() {
           diminuirQuantidade={diminuirQuantidade}
           removerItem={removerItem}
           total={total}
-          saldoRestante={saldoRestante}
-          estourouOrcamento={estourouOrcamento}
           finalizarCompra={finalizarCompra}
         />
       </div>
